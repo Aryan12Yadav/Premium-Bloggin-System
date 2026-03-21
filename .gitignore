@@ -1,0 +1,32 @@
+# Python cache files (auto generated)
+__pycache__/
+*.pyc
+
+# Virtual environments (never push these)
+blog1/
+venv/
+env/
+.venv/
+
+# Django database (local use only)
+db.sqlite3
+
+# User uploaded media files
+media/
+
+# Collected static files (generated during deploy)
+staticfiles/
+
+# Environment variables / secrets
+.env
+
+# Logs
+*.log
+
+# VS Code & IDE settings
+.vscode/
+.idea/
+
+# OS junk files
+.DS_Store
+Thumbs.db
