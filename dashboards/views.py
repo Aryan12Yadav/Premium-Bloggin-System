@@ -135,7 +135,7 @@ def edit_user(request,pk):
     user = get_object_or_404(User,pk = pk)
     if request.method == 'POST':
         form = EditUserForm(request.POST,instance=user)
-        if form.is_valid():
+        if form.is_valid(): 
             form.save()
             return redirect('users')
     form = EditUserForm(instance = user)
