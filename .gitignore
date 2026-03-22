@@ -30,3 +30,6 @@ staticfiles/
 # OS junk files
 .DS_Store
 Thumbs.db
+
+
+wsgi.py
