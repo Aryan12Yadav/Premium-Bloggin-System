@@ -9,10 +9,10 @@ env/
 .venv/
 
 # Django database (local use only)
-db.sqlite3
+# db.sqlite3
 
 # User uploaded media files
-media/
+# media/
 
 # Collected static files (generated during deploy)
 staticfiles/
