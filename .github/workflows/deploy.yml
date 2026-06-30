@@ -38,6 +38,9 @@ jobs:
     # Only deploy on direct push to main branch
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Trigger Northflank Webhook
+      - name: Trigger Northflank Rebuild via API
         run: |
-          curl -X POST "${{ secrets.NORTHFLANK_DEPLOY_WEBHOOK }}"
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.NORTHFLANK_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            https://api.northflank.com/v1/projects/bloging-app/services/premium-bloggin-system/builds
