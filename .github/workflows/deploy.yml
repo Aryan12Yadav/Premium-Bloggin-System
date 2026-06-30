@@ -1,4 +1,4 @@
-name: Django CI & Koyeb CD
+name: Django CI & Northflank CD
 
 on:
   push:
@@ -27,23 +27,17 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Django Tests
-        # Fallback mechanism is active: tests will run on temporary in-memory SQLite and local FileSystemStorage
+        # Fallback mechanism active: tests run locally on SQLite
         run: |
           python manage.py test
 
   deploy:
-    name: Deploy to Koyeb
+    name: Trigger Northflank Deploy
     needs: test
     runs-on: ubuntu-latest
-    # Only deploy on direct push to the main branch
+    # Only deploy on direct push to main branch
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Koyeb
-        uses: koyeb/action-git-deploy@v1
-        with:
-          api_token: ${{ secrets.KOYEB_API_TOKEN }}
-          app_name: "blogging-system"       # TODO: Isko apne Koyeb App Name se replace karein
-          service_name: "blogging-system"   # TODO: Isko apne Koyeb Service Name se replace karein
+      - name: Trigger Northflank Webhook
+        run: |
+          curl -X POST "${{ secrets.NORTHFLANK_DEPLOY_WEBHOOK }}"
