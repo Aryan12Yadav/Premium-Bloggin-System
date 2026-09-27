@@ -1,0 +1,123 @@
+<!-- AI Blog Copilot Floating Chatbot Widget -->
+<div id="blog-copilot-widget" 
+     data-api-base="https://social-blogging-copilot-api.onrender.com"
+     data-user-id="{{ request.user.id|default:'' }}"
+     data-username="{{ request.user.username|default:'guest' }}"
+     data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+
+    <!-- Floating Launcher Button -->
+    <button id="copilot-launcher-btn" class="copilot-launcher" aria-label="Open AI Copilot Chat" title="Chat with AI Copilot">
+        <span class="copilot-launcher-icon">
+            <i class="fa fa-comments" aria-hidden="true"></i>
+        </span>
+        <span class="copilot-close-icon" style="display: none;">
+            <i class="fa fa-times" aria-hidden="true"></i>
+        </span>
+        <span class="copilot-badge-pulse"></span>
+    </button>
+
+    <!-- Chatbot Window -->
+    <div id="copilot-chat-window" class="copilot-chat-window" style="display: none;" role="dialog" aria-labelledby="copilot-title">
+        <!-- Chat Header -->
+        <div class="copilot-header">
+            <div class="d-flex align-items-center">
+                <div class="copilot-avatar-header mr-2">
+                    <i class="fa fa-lightbulb-o"></i>
+                </div>
+                <div>
+                    <h5 id="copilot-title" class="copilot-heading mb-0">Blog AI Copilot</h5>
+                    <div class="copilot-status">
+                        <span class="copilot-status-dot"></span>
+                        <span class="copilot-status-text">Online &bull; RAG Enabled</span>
+                    </div>
+                </div>
+            </div>
+            <div class="copilot-header-actions">
+                <button type="button" id="copilot-new-chat-btn" class="copilot-action-btn" title="Start New Conversation">
+                    <i class="fa fa-refresh"></i>
+                </button>
+                <button type="button" id="copilot-minimize-btn" class="copilot-action-btn" title="Minimize Chat">
+                    <i class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- User Context Banner -->
+        <div class="copilot-user-bar">
+            {% if request.user.is_authenticated %}
+                <span class="text-muted"><i class="fa fa-user-circle"></i> Chatting as <strong>{{ request.user.username }}</strong></span>
+            {% else %}
+                <span class="text-muted"><i class="fa fa-user-secret"></i> Guest Session &bull; <a href="{% url 'login' %}">Login to save</a></span>
+            {% endif %}
+            <span class="copilot-conv-tag" id="copilot-conv-tag" title="Active Conversation Thread">Thread active</span>
+        </div>
+
+        <!-- Messages Body -->
+        <div id="copilot-messages" class="copilot-messages">
+            <!-- Initial Welcome Message -->
+            <div class="copilot-message copilot-message-bot" id="copilot-welcome-message">
+                <div class="copilot-msg-avatar">
+                    <i class="fa fa-cube"></i>
+                </div>
+                <div class="copilot-msg-content">
+                    <div class="copilot-bubble">
+                        <p class="mb-1 font-weight-bold">Hi {% if request.user.is_authenticated %}{{ request.user.username }}{% else %}there{% endif %}! 👋</p>
+                        <p class="mb-2">I’m your <strong>Blog AI Copilot</strong>. I have real-time access to our entire blog repository, authors, categories, and articles.</p>
+                        <p class="mb-2">Ask me anything or pick a quick topic below:</p>
+                        
+                        <div class="copilot-suggestion-chips">
+                            <button type="button" class="copilot-chip" data-prompt="What blogs are available on this platform?">
+                                📚 Available blogs?
+                            </button>
+                            <button type="button" class="copilot-chip" data-prompt="What categories do we have and how many posts are in each?">
+                                🏷️ Explore categories
+                            </button>
+                            <button type="button" class="copilot-chip" data-prompt="Can you summarize the most interesting finance or tech articles?">
+                                💡 Summarize articles
+                            </button>
+                        </div>
+                    </div>
+                    <span class="copilot-msg-time">Just now</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Messages will be appended here -->
+
+            <!-- Typing / Processing Indicator -->
+            <div id="copilot-typing-indicator" class="copilot-message copilot-message-bot" style="display: none;">
+                <div class="copilot-msg-avatar">
+                    <i class="fa fa-cube"></i>
+                </div>
+                <div class="copilot-msg-content">
+                    <div class="copilot-bubble copilot-typing">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input Footer -->
+        <div class="copilot-footer">
+            <form id="copilot-chat-form" class="copilot-input-form">
+                <div class="input-group">
+                    <input type="text" 
+                           id="copilot-user-input" 
+                           class="form-control copilot-input" 
+                           placeholder="Ask anything about the blogs..." 
+                           autocomplete="off" 
+                           required>
+                    <div class="input-group-append">
+                        <button type="submit" id="copilot-send-btn" class="btn btn-warning copilot-send-btn" title="Send Message">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="copilot-subtext">
+                Press Enter to send &bull; Backed by RAG Knowledge Engine
+            </div>
+        </div>
+    </div>
+</div>

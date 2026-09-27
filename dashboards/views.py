@@ -18,7 +18,7 @@ def dashboard(request):
 
     context = {
         'category_count': category_count,
-        'blogs_count': blogs_countlogin
+        'blogs_count': blogs_count
     }
     return render(request, 'dashboard/dashboard.html', context)
 
