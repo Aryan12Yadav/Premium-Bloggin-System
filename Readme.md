@@ -1,144 +1,303 @@
 # Premium Blogging System 🚀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/python-3.13%20%7C%203.12-blue)](https://www.python.org/)
-[![Django](https://img.shields.io/badge/Django-6.0%20%7C%205.1-green)](https://www.djangoproject.com/)
-[![Northflank](https://img.shields.io/badge/Deployed%20on-Northflank-purple)](https://northflank.com/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-6.0-green)](https://www.djangoproject.com/)
+[![Deployed on](https://img.shields.io/badge/Deployed%20on-Northflank-purple)](https://northflank.com/)
 [![Cloudinary](https://img.shields.io/badge/Media%20Storage-Cloudinary-orange)](https://cloudinary.com/)
+[![AI Copilot](https://img.shields.io/badge/AI%20Copilot-FastAPI%20%2B%20RAG-brightgreen)](https://social-blogging-copilot-api.onrender.com)
 
 ---
 
-## 📖 Project Overview
+## 📖 About This Project
 
-**Premium Blogging System** is a full‑stack Django application that lets users create, manage, and share blog posts.  The project was built **entirely by hand – no AI assistance** – to showcase strong Python/Django fundamentals, secure handling of media files, CI/CD automation, and a polished admin experience.
+**Premium Blogging System** is a full-stack web application I built from scratch using **Python** and **Django**. It allows multiple users to create, manage, and share blog posts on a clean, responsive platform.
 
-Key highlights:
-- Multi‑user support with staff/admin roles.
-- **Fine‑grained permissions** – regular users can only edit their own posts, categories, and comments; staff members have full control.
-- Media stored in **Cloudinary** for fast, globally‑cached delivery.
-- Production‑ready containerised deployment on **Northflank** with automated migrations & static‑file handling.
-- GitHub Actions pipeline runs unit tests and triggers a Northflank build only on successful test runs.
+This project helped me practice real-world backend development skills — authentication, file uploads, database design, permissions, deployment, and now AI integration. I built everything step-by-step while learning Django, so this is both a learning project and a working product.
+
+What makes this project special is the **AI Blog Copilot** — a floating chatbot I integrated that is powered by a custom FastAPI backend using **LangChain RAG (Retrieval-Augmented Generation)**. Users can chat with the AI directly on the website to find blogs, ask questions, and get article summaries.
 
 ---
 
 ## ✨ Features
 
+### 🔑 Core Blogging Features
 | Feature | Description |
 |---|---|
-| **User Management** | Staff (`is_staff`) users can manage all content, while normal users only see and edit their own posts, categories, and comments. |
-| **Category Ownership** | Each `Category` records the author, enabling per‑user filtering in both the dashboard and the Django admin. |
-| **Rich Text Blog Posts** | Supports title, slug, featured image (uploaded to Cloudinary), short description, body, status (Draft/Published), and a featured flag. |
-| **Comments** | Authenticated users can leave comments on published posts. |
-| **Responsive Dashboard** | Custom dashboard with quick stats, CRUD for posts/categories, and user management for staff. |
-| **Static Files** | Served via **WhiteNoise** from the `staticfiles/` directory – no external web‑server required. |
-| **CI/CD** | GitHub Actions runs tests, then triggers a Northflank build via a secure API token. |
-| **Containerisation** | Dockerfile builds a lightweight container with all dependencies, runs migrations and starts Gunicorn. |
+| **User Authentication** | Register, Login, Logout with session management |
+| **Blog Posts** | Create/Edit/Delete posts with title, slug, body, short description, status (Draft / Published), and featured image |
+| **Categories** | Organize posts into categories with ownership tracking |
+| **Comments** | Authenticated users can comment on published posts |
+| **Featured Posts** | Mark blogs as featured to highlight them on the home page |
+| **Search** | Search blogs by keyword across titles and descriptions |
+| **Responsive Design** | Bootstrap 4 layout that works on mobile and desktop |
+
+### 🛡️ Permissions System
+| Role | What They Can Do |
+|---|---|
+| **Regular User** | Create, edit, and delete **their own** posts, categories, and comments only |
+| **Staff / Admin** | Full access to all content, user management, and Django admin panel |
+
+### 🤖 AI Blog Copilot (New!)
+A floating chatbot widget sits in the **bottom-right corner** of every page. It connects to a custom AI backend and lets users:
+- Ask questions about any blog post or category in natural language
+- Get AI-generated summaries of articles
+- Explore what content is available on the platform
+- Maintain their own **private multi-turn conversation** — each user's chat history is saved separately
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Python 3.13, Django 6.0 (compatible with Django 5.1) 
-- **Database**: PostgreSQL (managed by Northflank) – falls back to SQLite for local development.
-- **Media Storage**: Cloudinary (`django‑cloudinary‑storage`).
-- **Static Files**: WhiteNoise (`CompressedStaticFilesStorage`).
-- **Container**: Docker & Gunicorn.
-- **CI**: GitHub Actions.
-- **Hosting**: Northflank.
+| Layer | Technology |
+|---|---|
+| **Backend** | Python 3.10+, Django 6.0 |
+| **Database** | PostgreSQL (production via Neon/Northflank), SQLite (local dev) |
+| **Media Storage** | Cloudinary via `django-cloudinary-storage` |
+| **Static Files** | WhiteNoise (`CompressedStaticFilesStorage`) |
+| **Forms** | Django Crispy Forms + Bootstrap 4 |
+| **AI Copilot API** | FastAPI + LangChain + PGVector + Groq LLM (hosted on Render) |
+| **Containerization** | Docker + Gunicorn |
+| **CI/CD** | GitHub Actions |
+| **Hosting** | Northflank (main app) + Render (AI Copilot API) |
 
 ---
 
-## 📦 Quick Start (Local Development)
+## 🤖 AI Copilot Architecture
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/<your‑username>/premium‑blogging‑system.git
-   cd premium‑blogging‑system
-   ```
-2. **Create a virtual environment & install dependencies**
-   ```bash
-   python3 -m venv blog1
-   source blog1/bin/activate
-   pip install -r requirements.txt
-   ```
-3. **Create a `.env` file** (see the example below) – include your Cloudinary credentials and, if you wish, a local PostgreSQL URL.
-   ```env
-   SECRET_KEY=your‑django‑secret
-   DEBUG=True
-   ALLOWED_HOSTS=*
-
-   # Cloudinary (media)
-   CLOUDINARY_CLOUD_NAME=your‑cloud
-   CLOUDINARY_API_KEY=1234567890
-   CLOUDINARY_API_SECRET=your‑api‑secret
-
-   # Optional: local Postgres (or keep the default SQLite)
-   # DATABASE_URL=postgresql://user:pass@localhost:5432/blogdb?sslmode=disable
-   ```
-4. **Apply migrations & create a superuser**
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser   # follow prompts
-   ```
-5. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
-   Open `http://127.0.0.1:8000/` – the site is ready!
-
----
-
-## 🚀 Production Deployment (Northflank)
-
-1. **Northflank Service** – create a new service, select **Docker**, and point it to this repository.
-2. **Environment Variables** – add the same keys from `.env` (except `DEBUG`).
-3. **Build & Deploy** – the GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically triggers a Northflank build after successful tests.
-4. **Static Files** – `start.sh` runs `collectstatic` on container start, so all CSS/JS and admin assets are ready.
-5. **Database** – Northflank’s managed PostgreSQL instance is referenced via the `DATABASE_URL` secret.
-
----
-
-## 🔐 Permissions & Security
-
-- **Staff (`is_staff`)** – full CRUD access in the admin and dashboard, can manage users.
-- **Regular Users** – can create/edit/delete *their own* posts, categories, and comments. Attempts to edit others raise `PermissionDenied` (HTTP 403).
-- **CSRF Protection** – `CSRF_TRUSTED_ORIGINS` configured for Northflank sub‑domains.
-- **Secret Management** – All sensitive data (DB URL, Cloudinary keys, Northflank token) are stored as **environment secrets**, never committed.
-
----
-
-## 🧪 Testing
-
-The repository includes a minimal test suite. Run it locally with:
-```bash
-DATABASE_URL="" python manage.py test
+The AI Copilot is a completely separate FastAPI service I built at:
 ```
-The GitHub Actions workflow executes the same command on every push to `main`.
+https://social-blogging-copilot-api.onrender.com
+```
+
+It uses **RAG (Retrieval-Augmented Generation)** — the AI doesn't just guess answers, it actually reads from the real blog database to give accurate responses.
+
+```
+User types a question in the chatbot widget
+            │
+            ▼
+    FastAPI Backend (Render)
+            │
+            ├── Content Moderation Layer  →  Blocks harmful/abusive queries
+            │
+            ├── Conversational Memory  ←→  PostgreSQL (chat_history table)
+            │
+            ├── RAG Vector Engine  ←→  PGVector / FAISS (blog embeddings)
+            │
+            ├── LLM (Groq / OpenAI)  →  Generates the final answer
+            │
+            └── JSON Response  →  Rendered in the floating chat window
+```
+
+**Per-User Conversation Isolation:**
+- Logged-in users get their own conversation thread scoped to their User ID (`conv_u<id>_...`)
+- Guest visitors get a session UUID stored in `localStorage`
+- Chat history is restored automatically when you reopen the chat window
+- Each user's conversation is completely private — no data leakage between users
 
 ---
 
-## 📚 Documentation & Further Reading
+## 📁 Project Structure
 
-- **Django docs** – https://docs.djangoproject.com/en/stable/
-- **Cloudinary integration** – https://cloudinary.com/documentation/django_integration
-- **Northflank deployment guide** – https://northflank.com/docs
-- **WhiteNoise static files** – https://whitenoise.evans.io/en/stable/
+```
+blogging system/
+│
+├── blog_main/                  # Main Django project settings
+│   ├── settings.py             # All configurations (DB, Cloudinary, WhiteNoise)
+│   ├── urls.py                 # Root URL routing
+│   ├── views.py                # Home, login, register, logout views
+│   └── static/
+│       ├── css/
+│       │   ├── blog.css        # Main blog styling (Playfair Display serif)
+│       │   └── chatbot.css     # AI Copilot floating widget styling
+│       └── js/
+│           └── chatbot.js      # AI Copilot client logic (per-user memory, API calls)
+│
+├── blogs/                      # Blog app (posts, categories, comments)
+│   ├── models.py               # Blog, Category, Comment models
+│   ├── views.py                # Blog list, detail, category, search views
+│   └── urls.py                 # Blog URL patterns
+│
+├── dashboards/                 # Custom admin dashboard
+│   ├── views.py                # CRUD views with permission checks
+│   └── urls.py                 # Dashboard URL patterns
+│
+├── assignments/                # About page content model
+│
+├── templates/
+│   ├── base.html               # Base template (navbar, footer, chatbot widget)
+│   ├── home.html               # Home page with featured + regular posts
+│   ├── blogs.html              # Individual blog post view
+│   ├── search.html             # Search results page
+│   ├── includes/
+│   │   └── chatbot.html        # Floating AI Copilot widget HTML
+│   └── dashboard/
+│       ├── dashboard.html      # Dashboard home with stats cards
+│       ├── posts.html          # Manage posts table
+│       ├── categories.html     # Manage categories table
+│       ├── users.html          # User management (staff only)
+│       └── sidebar.html        # Dashboard sidebar navigation
+│
+├── media/                      # Local media files (uploaded images)
+├── requirements.txt            # Python dependencies
+├── Dockerfile                  # Production Docker image
+├── start.sh                    # Container startup script (collectstatic + gunicorn)
+└── manage.py                   # Django management entry point
+```
 
+---
 
+## ⚙️ Local Development Setup
 
-## 🛠️ Backend Architecture Deep Dive
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Aryan12Yadav/Premium-Bloggin-System.git
+cd "Premium-Bloggin-System"
+```
 
-- **Core Apps**: `blogs` (holds `Blog`, `Category`, `Comment` models) and `dashboards` (custom CRUD UI for authenticated users). Each `Category` and `Blog` records its creator via a `ForeignKey` to `auth.User`, enabling per‑user ownership checks.
-- **Permissions**:
-  - Regular users can **create**, **read**, **update**, and **delete** only their own posts, categories, and comments. This is enforced both in the custom dashboard views (using `PermissionDenied`) and in the Django admin (`CategoryAdmin`, `blogAdmin`, `CommentAdmin` with overridden `get_queryset`, `save_model`, and permission methods).
-  - Staff members (`is_staff` / `is_superuser`) have unrestricted access across the admin and dashboard.
-- **Media Management**: Images uploaded via `ImageField` are stored on **Cloudinary** using `django‑cloudinary‑storage`. The `featured_image` field automatically uploads files to Cloudinary, returning a CDN‑optimized URL.
-- **Static Files**: Served by **WhiteNoise** (`CompressedStaticFilesStorage`) directly from the container’s `staticfiles/` directory, eliminating the need for an external web server.
-- **Database Layer**: In production the app connects to a managed **PostgreSQL** instance on Northflank (configured through the `DATABASE_URL` environment variable). For local development it falls back to SQLite.
-- **Environment Configuration**: Sensitive settings (`SECRET_KEY`, Cloudinary credentials, Northflank token) are loaded from a `.env` file using `python‑dotenv`, keeping secrets out of version control.
-- **CI/CD Pipeline**: GitHub Actions runs unit tests (`python manage.py test`). On success it triggers a Northflank build via a secure API token, ensuring that only passing code reaches production.
+### 2. Create Virtual Environment
+```bash
+python3 -m venv blog1
+source blog1/bin/activate       # Linux / Mac
+# blog1\Scripts\activate        # Windows
+```
 
-Feel free to explore the code, raise issues, or request a demo!
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure Environment Variables
+Create a `.env` file in the project root (copy from `.env.example`):
+```env
+# Django Core Settings
+SECRET_KEY=your-long-random-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+# Neon PostgreSQL (or leave blank to use SQLite for local dev)
+DATABASE_URL=
+
+# Cloudinary Media Storage
+CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+> **Tip:** If you leave `DATABASE_URL` blank, Django automatically uses SQLite for local development.
+
+### 5. Apply Migrations
+```bash
+python manage.py migrate
+python manage.py createsuperuser   # create your admin account
+```
+
+### 6. Run the Development Server
+```bash
+python manage.py runserver
+```
+Open **http://127.0.0.1:8000/** — the site is live!
+
+The **AI Copilot chatbot** connects to the live Render API automatically, so it works out of the box without any extra setup.
+
+---
+
+## 🚀 Production Deployment (Northflank + Render)
+
+### Main Django App → Northflank
+
+1. Push code to GitHub (already done via CI/CD)
+2. On Northflank: create a new **Docker** web service pointing to this repo
+3. Add environment variables (same as `.env`, but without `DEBUG`)
+4. The `start.sh` script runs `collectstatic` + starts Gunicorn automatically
+5. GitHub Actions triggers a new Northflank build on every successful `git push` to `main`
+
+### AI Copilot API → Render
+The FastAPI backend is deployed separately at:
+```
+https://social-blogging-copilot-api.onrender.com
+```
+Source code: [github.com/Aryan12Yadav/social_blogging_copilot_api](https://github.com/Aryan12Yadav/social_blogging_copilot_api)
+
+---
+
+## 🧪 Running Tests
+
+```bash
+# Run all Django tests
+DATABASE_URL="" python manage.py test
+
+# Check for project issues
+python manage.py check
+```
+
+The GitHub Actions workflow runs tests automatically on every push to `main`. A Northflank deployment is triggered only if tests pass.
+
+---
+
+## 📡 AI Copilot API Reference
+
+The chatbot widget communicates with these endpoints:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Check API health, DB connection, indexed docs count |
+| `POST` | `/api/chat` | Send a message, get AI response with sources |
+| `GET` | `/api/chat/history/{conversation_id}` | Load past messages for a conversation |
+| `GET` | `/api/categories` | List all blog categories |
+| `GET` | `/api/blogs` | List all published blogs |
+| `POST` | `/api/summarize/{blog_id}` | Get a 3-bullet summary of a specific post |
+
+**Example Chat Request:**
+```json
+POST /api/chat
+{
+  "message": "What blogs are available about finance?",
+  "conversation_id": "conv_u1_abc123"
+}
+```
+
+**Example Response:**
+```json
+{
+  "conversation_id": "conv_u1_abc123",
+  "answer": "We have 2 finance blogs:\n1. Stock Market for Beginners - What is an ETF?\n2. How to Write a One-Page Business Plan",
+  "sources": [
+    { "title": "Stock Market for Beginners", "category": "Business and Finance", "author": "akarsh" }
+  ],
+  "status": "success"
+}
+```
+
+---
+
+## 🔐 Security & Permissions
+
+- **CSRF Protection** — enabled across all forms and configured for Northflank domains
+- **Password Hashing** — Django's built-in PBKDF2 hashing
+- **Permission Checks** — views raise `PermissionDenied` (HTTP 403) if a user tries to edit someone else's content
+- **Secret Management** — all credentials in `.env`, never committed to version control
+- **Content Moderation** — AI Copilot API blocks abusive language and prompt injection before hitting the LLM
+- **XSS Protection** — all user-generated content escaped in JavaScript with a custom `escapeHtml()` helper
+
+---
+
+## 📸 Screenshots
+
+> _Run the server locally and visit http://127.0.0.1:8000/ to see the homepage, blog posts, dashboard, and the floating AI Copilot chatbot in the bottom-right corner._
+
+---
+
+## 🤔 What I Learned
+
+Building this project taught me:
+- How Django's **MTV architecture** works in practice (Models, Templates, Views)
+- Writing **permission-based views** from scratch without relying on third-party packages
+- Integrating **third-party storage** (Cloudinary) with Django's file fields
+- Setting up **Docker + Gunicorn** for production deployment
+- Building and connecting a **FastAPI microservice** for AI features
+- How **RAG (Retrieval-Augmented Generation)** works — embeddings, vector stores, and LLM chains
+- Writing clean **JavaScript** for API-driven UI components with per-user state management
+- Setting up **GitHub Actions** for CI/CD automation
 
 ---
 
@@ -146,13 +305,8 @@ Feel free to explore the code, raise issues, or request a demo!
 
 © 2026 **Aryan Yadav**
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for the full license text.
-
-
-Feel free to explore the code, raise issues, or request a demo!
+This project is licensed under the **MIT License** — see the [`LICENSE`](LICENSE) file for details.
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License** – see `LICENSE` for details.
+> Built with ❤️ by [Aryan Yadav](https://github.com/Aryan12Yadav) — A student learning Django one feature at a time.
