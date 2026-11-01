@@ -19,6 +19,10 @@ staticfiles/
 
 # Environment variables / secrets
 .env
+.env.backup
+.env.*
+!.env.example
+
 
 # Logs
 *.log

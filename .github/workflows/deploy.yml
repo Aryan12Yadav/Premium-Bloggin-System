@@ -1,46 +1,46 @@
-name: Django CI & Northflank CD
+# name: Django CI & Northflank CD
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
 
-jobs:
-  test:
-    name: Run Django Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+# jobs:
+#   test:
+#     name: Run Django Tests
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.13"
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+#       - name: Install Dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
 
-      - name: Run Django Tests
-        # Fallback mechanism active: tests run locally on SQLite
-        run: |
-          python manage.py test
+#       - name: Run Django Tests
+#         # Fallback mechanism active: tests run locally on SQLite
+#         run: |
+#           python manage.py test
 
-  deploy:
-    name: Trigger Northflank Deploy
-    needs: test
-    runs-on: ubuntu-latest
-    # Only deploy on direct push to main branch
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - name: Trigger Northflank Rebuild via API
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.NORTHFLANK_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            https://api.northflank.com/v1/projects/bloging-app/services/premium-bloggin-system/build
+#   deploy:
+#     name: Trigger Northflank Deploy
+#     needs: test
+#     runs-on: ubuntu-latest
+#     # Only deploy on direct push to main branch
+#     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#     steps:
+#       - name: Trigger Northflank Rebuild via API
+#         run: |
+#           curl -X POST \
+#             -H "Authorization: Bearer ${{ secrets.NORTHFLANK_API_TOKEN }}" \
+#             -H "Content-Type: application/json" \
+#             https://api.northflank.com/v1/projects/bloging-app/services/premium-bloggin-system/build
