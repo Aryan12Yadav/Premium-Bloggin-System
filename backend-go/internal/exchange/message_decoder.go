@@ -3,6 +3,7 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -83,6 +84,16 @@ func (d *MessageDecoder) DecodeOrderbook(data []byte, receiveTime time.Time) (*m
 			Notional: notional,
 		})
 	}
+
+	// Sort bids descending: highest price is Best Bid
+	sort.Slice(bids, func(i, j int) bool {
+		return bids[i].Price > bids[j].Price
+	})
+
+	// Sort asks ascending: lowest price is Best Ask
+	sort.Slice(asks, func(i, j int) bool {
+		return asks[i].Price < asks[j].Price
+	})
 
 	var bestBid, bestAsk, spread, spreadBps float64
 	if len(bids) > 0 {
