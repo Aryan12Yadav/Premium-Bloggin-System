@@ -53,6 +53,15 @@ func main() {
 	binner := liquidity.NewPriceBinner(cfg.HeatmapBinWidth)
 	volEngine := volatility.NewVolatilityEngine(cfg.Symbol, cfg.VolatilityWindow1m, cfg.ATRPeriod)
 
+	// Pre-fetch historical 1-minute candles from Delta Exchange
+	histCandles, err := restClient.FetchHistoricalCandles(cfg.Symbol, "1", 150)
+	if err == nil && len(histCandles) > 0 {
+		log.Printf("[CANDLES] Loaded %d historical 1m candles from Delta Exchange", len(histCandles))
+		volEngine.LoadHistoricalCandles(histCandles)
+	} else {
+		log.Printf("[WARN] Failed to load historical candles: %v", err)
+	}
+
 	var streamServer *publisher.StreamServer
 
 	eventDetector := events.NewEventDetector(
@@ -152,8 +161,9 @@ func main() {
 						Symbol:    cfg.Symbol,
 						Timestamp: t.ExchangeTime,
 						Data: map[string]any{
-							"trade":      t,
-							"volatility": volMetrics,
+							"trade":         t,
+							"volatility":    volMetrics,
+							"active_candle": volEngine.GetCurrentCandle(),
 						},
 						Status: models.StatusLive,
 					})

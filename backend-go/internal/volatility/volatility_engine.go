@@ -38,6 +38,42 @@ func NewVolatilityEngine(symbol string, window1m, atrPeriod int) *VolatilityEngi
 	}
 }
 
+// LoadHistoricalCandles hydrates the engine with historical candles from REST
+func (ve *VolatilityEngine) LoadHistoricalCandles(candles []models.Candle) {
+	ve.mu.Lock()
+	defer ve.mu.Unlock()
+
+	if len(candles) == 0 {
+		return
+	}
+
+	ve.candles1m = make([]models.Candle, len(candles))
+	copy(ve.candles1m, candles)
+	ve.lastClose = candles[len(candles)-1].Close
+
+	// Precalculate returns & ATR from history
+	ve.returns1m = make([]float64, 0, len(candles))
+	for i := 1; i < len(candles); i++ {
+		prev := candles[i-1].Close
+		curr := candles[i].Close
+		if prev > 0 && curr > 0 {
+			ve.returns1m = append(ve.returns1m, math.Log(curr/prev))
+		}
+
+		tr := candles[i].High - candles[i].Low
+		tr1 := math.Abs(candles[i].High - prev)
+		tr2 := math.Abs(candles[i].Low - prev)
+		tr = math.Max(tr, math.Max(tr1, tr2))
+
+		if ve.atrValue == 0 {
+			ve.atrValue = tr
+		} else {
+			n := float64(ve.atrPeriod)
+			ve.atrValue = ((n-1.0)*ve.atrValue + tr) / n
+		}
+	}
+}
+
 // ProcessTrade updates live 1-minute candle from incoming trade
 func (ve *VolatilityEngine) ProcessTrade(trade *models.Trade) *models.VolatilityMetrics {
 	ve.mu.Lock()
@@ -133,12 +169,22 @@ func (ve *VolatilityEngine) finalize1mCandle(nextStart time.Time) {
 	ve.lastClose = c.Close
 
 	// Cap memory slices
-	if len(ve.candles1m) > 120 {
-		ve.candles1m = ve.candles1m[len(ve.candles1m)-120:]
+	if len(ve.candles1m) > 300 {
+		ve.candles1m = ve.candles1m[len(ve.candles1m)-300:]
 	}
-	if len(ve.returns1m) > 120 {
-		ve.returns1m = ve.returns1m[len(ve.returns1m)-120:]
+	if len(ve.returns1m) > 300 {
+		ve.returns1m = ve.returns1m[len(ve.returns1m)-300:]
 	}
+}
+
+func (ve *VolatilityEngine) GetCurrentCandle() *models.Candle {
+	ve.mu.RLock()
+	defer ve.mu.RUnlock()
+	if ve.current1m == nil {
+		return nil
+	}
+	c := *ve.current1m
+	return &c
 }
 
 func (ve *VolatilityEngine) calculateMetrics(currentPrice float64) *models.VolatilityMetrics {

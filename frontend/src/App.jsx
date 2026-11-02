@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import LiquidityHeatmapChart from './features/terminal/LiquidityHeatmapChart';
 import HeatmapCanvas from './features/terminal/HeatmapCanvas';
 import CandleChart from './features/terminal/CandleChart';
 import OrderbookPanel from './features/terminal/OrderbookPanel';
@@ -10,7 +11,7 @@ import './styles/terminal.css';
 
 export default function App() {
   const [marketData, setMarketData] = useState({
-    symbol: 'BTCUSDT',
+    symbol: 'BTCUSD',
     orderbook: null,
     liquidity: null,
     heatmap: [],
@@ -21,6 +22,7 @@ export default function App() {
   });
 
   const [timeframe, setTimeframe] = useState('1m');
+  const [viewMode, setViewMode] = useState('unified'); // 'unified' or 'split'
   const [isRiskModalOpen, setIsRiskModalOpen] = useState(false);
   const [isResearchModalOpen, setIsResearchModalOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date().toUTCString());
@@ -75,11 +77,20 @@ export default function App() {
             const d = envelope.data || {};
             setMarketData(prev => {
               const updatedCandles = [...prev.candles];
-              if (d.trade) {
-                // Keep candles list fresh
+              if (d.active_candle) {
+                const ac = d.active_candle;
+                const lastIdx = updatedCandles.length - 1;
+                if (lastIdx >= 0 && updatedCandles[lastIdx].start_time === ac.start_time) {
+                  updatedCandles[lastIdx] = ac;
+                } else if (lastIdx >= 0 && new Date(ac.start_time).getTime() > new Date(updatedCandles[lastIdx].start_time).getTime()) {
+                  updatedCandles.push(ac);
+                } else if (lastIdx < 0) {
+                  updatedCandles.push(ac);
+                }
               }
               return {
                 ...prev,
+                candles: updatedCandles.slice(-150),
                 volatility: d.volatility || prev.volatility,
               };
             });
@@ -169,6 +180,30 @@ export default function App() {
             {currentTime}
           </span>
 
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-[#0A0E17] p-0.5 rounded border border-[#1A2234] text-xs font-mono">
+            <button
+              onClick={() => setViewMode('unified')}
+              className={`px-2.5 py-1 rounded transition ${
+                viewMode === 'unified'
+                  ? 'bg-purple-600 text-white font-bold shadow'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              🟣 Unified Heatmap
+            </button>
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-2.5 py-1 rounded transition ${
+                viewMode === 'split'
+                  ? 'bg-[#1E2A40] text-amber-300 font-bold'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Split View
+            </button>
+          </div>
+
           {/* Action Modals */}
           <button
             onClick={() => setIsRiskModalOpen(true)}
@@ -189,40 +224,73 @@ export default function App() {
       <main className="flex-1 p-3 grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-y-auto">
         {/* Left Column (Charts & Heatmap) - 8 Cols */}
         <div className="lg:col-span-8 flex flex-col space-y-3">
-          {/* Candlestick Chart */}
-          <div className="terminal-card">
-            <div className="terminal-header">
-              <span>BTCUSDT Candlestick Telemetry ({timeframe})</span>
-              <span className="text-gray-400 font-mono text-[10px]">Delta Exchange Market Flow</span>
-            </div>
-            <div className="p-2">
-              <CandleChart
-                candles={marketData.candles}
-                currentPrice={currentPrice}
-                timeframe={timeframe}
-                onTimeframeChange={setTimeframe}
-              />
-            </div>
-          </div>
-
-          {/* Horizontal Liquidity Heatmap */}
-          <div className="terminal-card flex-1">
-            <div className="terminal-header">
-              <span>1-Minute Horizontal Liquidity Heatmap</span>
-              <div className="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
-                <span>Bin: $50</span>
-                <span>•</span>
-                <span>Time-Weighted TWAP</span>
+          {viewMode === 'unified' ? (
+            /* Coinfuty Institutional Unified Candlestick + Liquidity Heatmap Overlay */
+            <div className="terminal-card flex-1 flex flex-col">
+              <div className="terminal-header">
+                <span className="flex items-center space-x-2">
+                  <span className="text-amber-400 font-bold">BTCUSD Coinfuty-Style Liquidity Heatmap</span>
+                  <span className="text-gray-400 text-[10px] font-normal">• Delta Product #27</span>
+                </span>
+                <div className="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
+                  <span>Bin: $50</span>
+                  <span>•</span>
+                  <span>TWAP Density</span>
+                  <span>•</span>
+                  <span className="text-emerald-400">{marketData.candles.length} Candles</span>
+                </div>
+              </div>
+              <div className="p-2 flex-1">
+                <LiquidityHeatmapChart
+                  candles={marketData.candles}
+                  activeHeatmap={marketData.heatmap}
+                  liquiditySnapshot={marketData.liquidity}
+                  currentPrice={currentPrice}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                  symbol="BTCUSD (Product #27)"
+                />
               </div>
             </div>
-            <div className="p-2">
-              <HeatmapCanvas
-                activeHeatmap={marketData.heatmap}
-                currentPrice={currentPrice}
-                binWidth={50}
-              />
-            </div>
-          </div>
+          ) : (
+            /* Split View */
+            <>
+              {/* Candlestick Chart */}
+              <div className="terminal-card">
+                <div className="terminal-header">
+                  <span>BTCUSD Candlestick Telemetry ({timeframe})</span>
+                  <span className="text-gray-400 font-mono text-[10px]">Delta Exchange Market Flow</span>
+                </div>
+                <div className="p-2">
+                  <CandleChart
+                    candles={marketData.candles}
+                    currentPrice={currentPrice}
+                    timeframe={timeframe}
+                    onTimeframeChange={setTimeframe}
+                  />
+                </div>
+              </div>
+
+              {/* Horizontal Liquidity Heatmap */}
+              <div className="terminal-card flex-1">
+                <div className="terminal-header">
+                  <span>1-Minute Horizontal Liquidity Heatmap</span>
+                  <div className="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
+                    <span>Bin: $50</span>
+                    <span>•</span>
+                    <span>Time-Weighted TWAP</span>
+                  </div>
+                </div>
+                <div className="p-2">
+                  <HeatmapCanvas
+                    activeHeatmap={marketData.heatmap}
+                    currentPrice={currentPrice}
+                    binWidth={50}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Right Column (Orderbook, Analytics, Events) - 4 Cols */}

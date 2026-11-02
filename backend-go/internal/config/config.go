@@ -3,8 +3,33 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
+
+func loadEnvFile() {
+	paths := []string{".env", "../.env", "../../.env"}
+	for _, p := range paths {
+		data, err := os.ReadFile(p)
+		if err == nil {
+			for _, line := range strings.Split(string(data), "\n") {
+				line = strings.TrimSpace(line)
+				if line == "" || strings.HasPrefix(line, "#") {
+					continue
+				}
+				parts := strings.SplitN(line, "=", 2)
+				if len(parts) == 2 {
+					key := strings.TrimSpace(parts[0])
+					val := strings.TrimSpace(parts[1])
+					if os.Getenv(key) == "" {
+						_ = os.Setenv(key, val)
+					}
+				}
+			}
+			break
+		}
+	}
+}
 
 type Config struct {
 	Symbol                   string
@@ -25,6 +50,7 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
+	loadEnvFile()
 	return &Config{
 		Symbol:                   getEnv("MARKET_SYMBOL", "BTCUSDT"),
 		ExchangeWSURL:            getEnv("EXCHANGE_WS_URL", "wss://socket.delta.exchange"),

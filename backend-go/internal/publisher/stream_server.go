@@ -105,7 +105,7 @@ func (s *StreamServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			"orderbook": snap,
 			"liquidity": liq,
 			"heatmap":   s.heatmap.GetActiveSnapshot(),
-			"candles":   s.volatility.GetRecentCandles(50),
+			"candles":   s.volatility.GetRecentCandles(150),
 			"events":    s.detector.GetRecentEvents(20),
 		},
 		Status: snap.Health,
@@ -171,7 +171,7 @@ func (s *StreamServer) handleHeatmap(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StreamServer) handleCandles(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, s.volatility.GetRecentCandles(60))
+	writeJSON(w, s.volatility.GetRecentCandles(150))
 }
 
 func (s *StreamServer) handleEvents(w http.ResponseWriter, r *http.Request) {
