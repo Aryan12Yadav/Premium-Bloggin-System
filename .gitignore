@@ -1,39 +1,140 @@
-# Python cache files (auto generated)
-__pycache__/
-*.pyc
+# ==============================================================================
+# BTCUSD Liquidity Intelligence & AI Research Platform - .gitignore
+# ==============================================================================
 
-# Virtual environments (never push these)
+# ------------------------------------------------------------------------------
+# 1. Environment Variables & Secrets (CRITICAL)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+.env.backup
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.cert
+
+# ------------------------------------------------------------------------------
+# 2. Go Backend (backend-go)
+# ------------------------------------------------------------------------------
+backend-go/bin/
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+go.work
+go.work.sum
+
+# ------------------------------------------------------------------------------
+# 3. Python Research Engine (research-python)
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
 blog1/
 venv/
 env/
 .venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Django database (local use only)
-# db.sqlite3
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
 
-# User uploaded media files
-# media/
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+research.db
 
-# Collected static files (generated during deploy)
-staticfiles/
+# ------------------------------------------------------------------------------
+# 4. React Frontend (frontend)
+# ------------------------------------------------------------------------------
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+dist/
+*.local
+.npm
+.eslintcache
+.stylelintcache
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Environment variables / secrets
-.env
-.env.backup
-.env.*
-!.env.example
-
-
-# Logs
-*.log
-
-# VS Code & IDE settings
+# ------------------------------------------------------------------------------
+# 5. IDEs & Editors
+# ------------------------------------------------------------------------------
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
 
-# OS junk files
+# ------------------------------------------------------------------------------
+# 6. Operating System Files
+# ------------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-
-wsgi.py
+# ------------------------------------------------------------------------------
+# 7. Logs & Temporary Files
+# ------------------------------------------------------------------------------
+*.log
+logs/
+temp/
+tmp/
