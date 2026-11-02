@@ -66,13 +66,31 @@ export default function App() {
             }));
           } else if (envelope.type === 'market.liquidity.update') {
             const d = envelope.data || {};
-            setMarketData(prev => ({
-              ...prev,
-              orderbook: d.orderbook || prev.orderbook,
-              liquidity: d.liquidity || prev.liquidity,
-              heatmap: d.active_heatmap || prev.heatmap,
-              status: envelope.status || 'LIVE',
-            }));
+            setMarketData(prev => {
+              let updatedCandles = prev.candles;
+              if (d.active_candle) {
+                const ac = d.active_candle;
+                updatedCandles = [...prev.candles];
+                const lastIdx = updatedCandles.length - 1;
+                if (lastIdx >= 0 && updatedCandles[lastIdx].start_time === ac.start_time) {
+                  updatedCandles[lastIdx] = ac;
+                } else if (lastIdx >= 0 && new Date(ac.start_time).getTime() > new Date(updatedCandles[lastIdx].start_time).getTime()) {
+                  updatedCandles.push(ac);
+                } else if (lastIdx < 0) {
+                  updatedCandles = [ac];
+                }
+              } else if (d.candles && Array.isArray(d.candles) && d.candles.length > 0) {
+                updatedCandles = d.candles;
+              }
+              return {
+                ...prev,
+                orderbook: d.orderbook || prev.orderbook,
+                liquidity: d.liquidity || prev.liquidity,
+                heatmap: d.active_heatmap || prev.heatmap,
+                candles: updatedCandles.slice(-150),
+                status: envelope.status || 'LIVE',
+              };
+            });
           } else if (envelope.type === 'market.trade.update') {
             const d = envelope.data || {};
             setMarketData(prev => {

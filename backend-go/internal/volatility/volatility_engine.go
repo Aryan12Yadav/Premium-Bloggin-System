@@ -133,6 +133,55 @@ func (ve *VolatilityEngine) ProcessTrade(trade *models.Trade) *models.Volatility
 	return ve.calculateMetrics(trade.Price)
 }
 
+// ProcessPriceTick updates live 1-minute candle continuously from orderbook mark price
+func (ve *VolatilityEngine) ProcessPriceTick(price float64, tickTime time.Time) {
+	ve.mu.Lock()
+	defer ve.mu.Unlock()
+
+	if price <= 0 {
+		return
+	}
+	if tickTime.IsZero() {
+		tickTime = time.Now().UTC()
+	}
+	candleStart := tickTime.Truncate(time.Minute)
+
+	if ve.current1m == nil {
+		ve.current1m = &models.Candle{
+			Symbol:     ve.symbol,
+			Interval:   "1m",
+			StartTime:  candleStart,
+			EndTime:    candleStart.Add(time.Minute),
+			Open:       price,
+			High:       price,
+			Low:        price,
+			Close:      price,
+			IsClosed:   false,
+		}
+	} else if candleStart.After(ve.current1m.StartTime) {
+		ve.finalize1mCandle(candleStart)
+		ve.current1m = &models.Candle{
+			Symbol:     ve.symbol,
+			Interval:   "1m",
+			StartTime:  candleStart,
+			EndTime:    candleStart.Add(time.Minute),
+			Open:       price,
+			High:       price,
+			Low:        price,
+			Close:      price,
+			IsClosed:   false,
+		}
+	} else {
+		if price > ve.current1m.High {
+			ve.current1m.High = price
+		}
+		if price < ve.current1m.Low {
+			ve.current1m.Low = price
+		}
+		ve.current1m.Close = price
+	}
+}
+
 func (ve *VolatilityEngine) finalize1mCandle(nextStart time.Time) {
 	c := ve.current1m
 	c.IsClosed = true

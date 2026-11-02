@@ -104,33 +104,39 @@ export default function LiquidityHeatmapChart({
     const plotWidth = width - rightMargin;
     const plotHeight = height - bottomMargin;
 
-    // Price scaling
+    // Time scaling (Candles across X-axis)
+    const displayCount = Math.max(Math.floor(60 / zoomLevel), 25);
+    const visibleCandles = candles.slice(-displayCount);
+    const candleSpacing = plotWidth / Math.max(visibleCandles.length, 25);
+    const candleWidth = Math.max(4, candleSpacing * 0.68);
+
+    // Price scaling STRICTLY based on visible candles and current mark price
     let minPrice = Infinity;
     let maxPrice = -Infinity;
 
-    if (candles.length > 0) {
-      candles.forEach(c => {
-        if (c.low < minPrice) minPrice = c.low;
+    if (visibleCandles.length > 0) {
+      visibleCandles.forEach(c => {
+        if (c.low > 0 && c.low < minPrice) minPrice = c.low;
         if (c.high > maxPrice) maxPrice = c.high;
       });
     }
 
-    if (activeHeatmap.length > 0) {
-      activeHeatmap.forEach(b => {
-        if (b.price_bin < minPrice) minPrice = b.price_bin;
-        if (b.price_bin > maxPrice) maxPrice = b.price_bin;
-      });
+    if (currentPrice && currentPrice > 0) {
+      if (currentPrice < minPrice) minPrice = currentPrice;
+      if (currentPrice > maxPrice) maxPrice = currentPrice;
     }
 
-    if (minPrice === Infinity || maxPrice === -Infinity) {
-      minPrice = (currentPrice || 78000) - 400;
-      maxPrice = (currentPrice || 78000) + 400;
+    if (minPrice === Infinity || maxPrice === -Infinity || minPrice >= maxPrice) {
+      const ref = currentPrice || 78500;
+      minPrice = ref - 150;
+      maxPrice = ref + 150;
     }
 
-    // Apply Zoom & Pan to Price Range
-    const basePadding = (maxPrice - minPrice) * 0.1 || 100;
-    const centerPrice = (maxPrice + minPrice) / 2 + (panOffset.y / plotHeight) * (maxPrice - minPrice);
-    const scaledSpan = ((maxPrice - minPrice + basePadding * 2) / zoomLevel) || 500;
+    // Dynamic padding so candlesticks fill ~70% of canvas height comfortably
+    const rawSpan = Math.max(maxPrice - minPrice, 40);
+    const padding = Math.max(rawSpan * 0.20, 30);
+    const centerPrice = (maxPrice + minPrice) / 2 + (panOffset.y / plotHeight) * rawSpan;
+    const scaledSpan = Math.max(rawSpan + padding * 2, 60) / zoomLevel;
     const viewMinPrice = centerPrice - scaledSpan / 2;
     const viewMaxPrice = centerPrice + scaledSpan / 2;
     const priceRange = viewMaxPrice - viewMinPrice || 1;
@@ -138,12 +144,6 @@ export default function LiquidityHeatmapChart({
     // Helper functions for coordinates
     const priceToY = (price) => plotHeight - ((price - viewMinPrice) / priceRange) * plotHeight;
     const yToPrice = (y) => viewMaxPrice - (y / plotHeight) * priceRange;
-
-    // Time scaling (Candles across X-axis)
-    const displayCount = Math.max(Math.floor(60 / zoomLevel), 25);
-    const visibleCandles = candles.slice(-displayCount);
-    const candleSpacing = plotWidth / Math.max(visibleCandles.length, 25);
-    const candleWidth = Math.max(3, candleSpacing * 0.65);
 
     // -------------------------------------------------------------
     // LAYER 1: HORIZONTAL LIQUIDITY HEATMAP BANDS
@@ -157,7 +157,7 @@ export default function LiquidityHeatmapChart({
       if (tot > maxNotional) maxNotional = tot;
     });
 
-    const binHeight = Math.max(8, ((50 / priceRange) * plotHeight));
+    const binHeight = Math.max(6, ((50 / priceRange) * plotHeight));
 
     binsToRender.forEach(bucket => {
       const price = bucket.price_bin || bucket.bin_price;
@@ -172,22 +172,22 @@ export default function LiquidityHeatmapChart({
       const isBid = bidNotional >= askNotional;
       ctx.fillStyle = getHeatmapColor(intensity, isBid);
 
-      // Render horizontal liquidity strip across the entire active chart width
-      ctx.fillRect(0, y - binHeight / 2, plotWidth, binHeight - 1);
+      // Render horizontal liquidity strip across the active chart width
+      ctx.fillRect(0, y - binHeight / 2, plotWidth, Math.max(binHeight - 1, 2));
 
       // High concentration golden glow accent
       if (intensity >= 0.7) {
-        ctx.fillStyle = 'rgba(254, 240, 138, 0.25)';
-        ctx.fillRect(0, y - binHeight / 4, plotWidth, binHeight / 2);
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+        ctx.fillRect(0, y - binHeight / 4, plotWidth, Math.max(binHeight / 2, 2));
       }
     });
 
     // -------------------------------------------------------------
     // LAYER 2: BACKGROUND PRICE GRID & AXIS TICKS
     // -------------------------------------------------------------
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 1;
-    const gridSteps = 8;
+    const gridSteps = 7;
     for (let i = 0; i <= gridSteps; i++) {
       const y = (plotHeight / gridSteps) * i;
       ctx.beginPath();
@@ -203,44 +203,77 @@ export default function LiquidityHeatmapChart({
     }
 
     // -------------------------------------------------------------
-    // LAYER 3: CANDLESTICK OVERLAY (Directly over the Heatmap)
+    // LAYER 3: CANDLESTICK OVERLAY (Prominently rendered on top)
     // -------------------------------------------------------------
-    visibleCandles.forEach((c, idx) => {
-      const x = idx * candleSpacing + candleSpacing / 2 + panOffset.x;
-      if (x < -20 || x > plotWidth + 20) return;
+    if (visibleCandles.length === 0) {
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '12px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.fillText('Hydrating live 1-minute candlestick telemetry...', plotWidth / 2, plotHeight / 2);
+    } else {
+      visibleCandles.forEach((c, idx) => {
+        const x = idx * candleSpacing + candleSpacing / 2 + panOffset.x;
+        if (x < -20 || x > plotWidth + 20) return;
 
-      const isUp = c.close >= c.open;
-      const candleColor = isUp ? '#22C55E' : '#F43F5E'; // Emerald for up, coral pink for down
+        const isUp = c.close >= c.open;
+        const isLive = idx === visibleCandles.length - 1;
+        const candleColor = isUp ? '#22C55E' : '#EF4444'; // Vibrant green / coral red
+        const borderColor = isUp ? '#86EFAC' : '#FCA5A5';
 
-      const highY = priceToY(c.high);
-      const lowY = priceToY(c.low);
-      const openY = priceToY(c.open);
-      const closeY = priceToY(c.close);
+        const highY = priceToY(c.high);
+        const lowY = priceToY(c.low);
+        const openY = priceToY(c.open);
+        const closeY = priceToY(c.close);
 
-      // Candlestick Wick
-      ctx.strokeStyle = candleColor;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(x, highY);
-      ctx.lineTo(x, lowY);
-      ctx.stroke();
+        // Candlestick Wick
+        ctx.strokeStyle = candleColor;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x, highY);
+        ctx.lineTo(x, lowY);
+        ctx.stroke();
 
-      // Candlestick Body with subtle shadow
-      ctx.fillStyle = candleColor;
-      const topY = Math.min(openY, closeY);
-      const bodyH = Math.max(2, Math.abs(openY - closeY));
-      ctx.fillRect(x - candleWidth / 2, topY, candleWidth, bodyH);
+        // Candlestick Body
+        ctx.fillStyle = candleColor;
+        const topY = Math.min(openY, closeY);
+        const bodyH = Math.max(3, Math.abs(openY - closeY));
+        ctx.fillRect(x - candleWidth / 2, topY, candleWidth, bodyH);
 
-      // Time axis ticks at bottom
-      if (idx % 6 === 0) {
-        ctx.fillStyle = '#64748B';
-        ctx.font = '9px "JetBrains Mono"';
-        ctx.textAlign = 'center';
-        const d = new Date(c.start_time);
-        const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        ctx.fillText(timeStr, x, plotHeight + 16);
-      }
-    });
+        // Candlestick Border Outline
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - candleWidth / 2, topY, candleWidth, bodyH);
+
+        // Active Live Candle Highlighter
+        if (isLive) {
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([2, 2]);
+          ctx.strokeRect(x - candleWidth / 2 - 2, topY - 2, candleWidth + 4, bodyH + 4);
+          ctx.setLineDash([]);
+
+          // LIVE badge
+          ctx.fillStyle = '#38BDF8';
+          ctx.font = 'bold 8px "JetBrains Mono"';
+          ctx.textAlign = 'center';
+          ctx.fillText('LIVE', x, Math.max(highY - 6, 12));
+        }
+
+        // Time axis ticks at bottom
+        if (idx % 6 === 0) {
+          ctx.fillStyle = '#94A3B8';
+          ctx.font = '9px "JetBrains Mono"';
+          ctx.textAlign = 'center';
+          const d = new Date(c.start_time);
+          const timeStr = !isNaN(d.getTime())
+            ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+            : '';
+          if (timeStr) {
+            ctx.fillText(timeStr, x, plotHeight + 16);
+          }
+        }
+      });
+    }
 
     // -------------------------------------------------------------
     // LAYER 4: LIVE PRICE REFERENCE LINE

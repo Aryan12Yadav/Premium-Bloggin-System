@@ -132,6 +132,15 @@ func main() {
 				// Check liquidity withdrawal
 				eventDetector.ProcessLiquiditySnapshot(liqSnap)
 
+				// Update active 1-minute candle continuously with live mark price
+				midPrice := snap.BestBid
+				if snap.BestBid > 0 && snap.BestAsk > 0 {
+					midPrice = (snap.BestBid + snap.BestAsk) / 2.0
+				}
+				if midPrice > 0 {
+					volEngine.ProcessPriceTick(midPrice, snap.ExchangeTime)
+				}
+
 				// Throttle broadcast to max 10 updates/sec for smooth frontend rendering
 				if time.Since(lastBroadcast) >= 100*time.Millisecond {
 					streamServer.Broadcast(publisher.WSEnvelope{
@@ -139,9 +148,11 @@ func main() {
 						Symbol:    cfg.Symbol,
 						Timestamp: snap.ExchangeTime,
 						Data: map[string]any{
-							"orderbook": snap,
-							"liquidity": liqSnap,
+							"orderbook":      snap,
+							"liquidity":      liqSnap,
 							"active_heatmap": heatmapEng.GetActiveSnapshot(),
+							"active_candle":  volEngine.GetCurrentCandle(),
+							"candles":        volEngine.GetRecentCandles(150),
 						},
 						Status: snap.Health,
 					})
