@@ -90,7 +90,7 @@ export default function LiquidityHeatmapChart({
     const ctx = canvas.getContext('2d');
 
     const width = containerRef.current ? containerRef.current.clientWidth : 900;
-    const height = 480;
+    const height = containerRef.current ? Math.max(containerRef.current.clientHeight, 480) : 520;
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -404,7 +404,7 @@ export default function LiquidityHeatmapChart({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[480px] bg-[#140A26] rounded-md overflow-hidden select-none border border-[#2D1654]"
+      className="relative w-full h-full min-h-[500px] bg-[#140A26] rounded-md overflow-hidden select-none border border-[#2D1654] flex flex-col flex-1"
     >
       {/* Top Floating Control Bar */}
       <div className="absolute top-2.5 left-3 z-10 flex items-center space-x-3 bg-[#1E0F38]/90 backdrop-blur px-3 py-1.5 rounded border border-[#3E1D70] text-xs font-mono">
@@ -454,7 +454,7 @@ export default function LiquidityHeatmapChart({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
-        style={{ width: '100%', height: '480px', display: 'block', cursor: isDragging ? 'grabbing' : 'crosshair' }}
+        style={{ width: '100%', height: '100%', flex: 1, display: 'block', cursor: isDragging ? 'grabbing' : 'crosshair' }}
       />
 
       {/* Bottom Hint */}
