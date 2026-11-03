@@ -22,35 +22,42 @@ export class LiveCandleStream {
   }
 
   async fetchHistoricalCandles() {
-    try {
-      const url = `https://api.binance.com/api/v3/klines?symbol=${this.symbol}&interval=${this.interval}&limit=500`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`Klines HTTP ${res.status}`);
-      }
-      const rawKlines = await res.json();
-      if (!Array.isArray(rawKlines)) return;
+    const endpoints = [
+      `https://api.binance.com/api/v3/klines?symbol=${this.symbol}&interval=${this.interval}&limit=500`,
+      `https://data-api.binance.vision/api/v3/klines?symbol=${this.symbol}&interval=${this.interval}&limit=500`,
+      `https://api1.binance.com/api/v3/klines?symbol=${this.symbol}&interval=${this.interval}&limit=500`,
+    ];
 
-      const formatted = rawKlines.map(k => ({
-        symbol: this.symbol,
-        interval: this.interval,
-        start_time: new Date(k[0]).toISOString(),
-        open: parseFloat(k[1]),
-        high: parseFloat(k[2]),
-        low: parseFloat(k[3]),
-        close: parseFloat(k[4]),
-        volume: parseFloat(k[5]),
-        trade_count: k[8],
-        is_closed: true,
-      }));
+    for (const url of endpoints) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const rawKlines = await res.json();
+        if (!Array.isArray(rawKlines) || rawKlines.length === 0) continue;
 
-      this.candles = formatted;
-      if (this.onSnapshot) {
-        this.onSnapshot(this.candles);
+        const formatted = rawKlines.map(k => ({
+          symbol: this.symbol,
+          interval: this.interval,
+          start_time: new Date(k[0]).toISOString(),
+          open: parseFloat(k[1]),
+          high: parseFloat(k[2]),
+          low: parseFloat(k[3]),
+          close: parseFloat(k[4]),
+          volume: parseFloat(k[5]),
+          trade_count: k[8],
+          is_closed: true,
+        }));
+
+        this.candles = formatted;
+        if (this.onSnapshot) {
+          this.onSnapshot(this.candles);
+        }
+        return;
+      } catch (err) {
+        // try next endpoint
       }
-    } catch (err) {
-      console.warn('[LiveCandleStream] Failed to fetch historical candles:', err);
     }
+    console.warn('[LiveCandleStream] All endpoints failed to fetch historical candles');
   }
 
   connectWebSocket() {
