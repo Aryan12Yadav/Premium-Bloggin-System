@@ -53,8 +53,8 @@ func main() {
 	binner := liquidity.NewPriceBinner(cfg.HeatmapBinWidth)
 	volEngine := volatility.NewVolatilityEngine(cfg.Symbol, cfg.VolatilityWindow1m, cfg.ATRPeriod)
 
-	// Pre-fetch historical 1-minute candles from Delta Exchange
-	histCandles, err := restClient.FetchHistoricalCandles(cfg.Symbol, "1", 150)
+	// Pre-fetch historical 1-minute candles from Delta Exchange (500 candles for full historical analysis)
+	histCandles, err := restClient.FetchHistoricalCandles(cfg.Symbol, "1", 500)
 	if err == nil && len(histCandles) > 0 {
 		log.Printf("[CANDLES] Loaded %d historical 1m candles from Delta Exchange", len(histCandles))
 		volEngine.LoadHistoricalCandles(histCandles)
@@ -96,6 +96,12 @@ func main() {
 			})
 		}
 	})
+
+	// Pre-seed historical 2D heatmap matrix so historical candles have immediate liquidity data
+	if len(histCandles) > 0 {
+		heatmapEng.SeedHistoryFromCandles(histCandles)
+		log.Printf("[HEATMAP] Seeded historical 2D heatmap matrix from %d candles", len(histCandles))
+	}
 
 	streamServer = publisher.NewStreamServer(cfg.ServerPort, localBook, binner, heatmapEng, volEngine, eventDetector)
 

@@ -39,7 +39,7 @@ type StreamServer struct {
 	detector   *events.EventDetector
 
 	mu      sync.Mutex
-	clients map[*websocket.Conn]bool
+	clients map[*websocket.Conn]*sync.Mutex
 }
 
 func NewStreamServer(
@@ -57,7 +57,7 @@ func NewStreamServer(
 		heatmap:    heatmap,
 		volatility: volatility,
 		detector:   detector,
-		clients:    make(map[*websocket.Conn]bool),
+		clients:    make(map[*websocket.Conn]*sync.Mutex),
 	}
 }
 
@@ -90,26 +90,37 @@ func (s *StreamServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	s.mu.Lock()
-	s.clients[conn] = true
-	s.mu.Unlock()
+	connMu := &sync.Mutex{}
 
-	// Send initial snapshot on connect
+	// Send initial snapshot on connect (protected by connMu)
 	snap := s.orderbook.GetSnapshot()
 	liq := s.binner.Aggregate(snap)
-	_ = conn.WriteJSON(WSEnvelope{
+	snapEnv := WSEnvelope{
 		Type:      "market.snapshot",
 		Symbol:    snap.Symbol,
 		Timestamp: time.Now().UTC(),
 		Data: map[string]any{
-			"orderbook": snap,
-			"liquidity": liq,
-			"heatmap":   s.heatmap.GetActiveSnapshot(),
-			"candles":   s.volatility.GetRecentCandles(150),
-			"events":    s.detector.GetRecentEvents(20),
+			"orderbook":       snap,
+			"liquidity":       liq,
+			"heatmap":         s.heatmap.GetActiveSnapshot(),
+			"heatmap_history": s.heatmap.GetHistory(15000),
+			"candles":         s.volatility.GetRecentCandles(500),
+			"events":          s.detector.GetRecentEvents(20),
 		},
 		Status: snap.Health,
-	})
+	}
+
+	snapData, err := json.Marshal(snapEnv)
+	if err == nil {
+		connMu.Lock()
+		conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		_ = conn.WriteMessage(websocket.TextMessage, snapData)
+		connMu.Unlock()
+	}
+
+	s.mu.Lock()
+	s.clients[conn] = connMu
+	s.mu.Unlock()
 
 	for {
 		_, _, err := conn.ReadMessage()
@@ -124,19 +135,33 @@ func (s *StreamServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *StreamServer) Broadcast(env WSEnvelope) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	data, err := json.Marshal(env)
 	if err != nil {
 		return
 	}
 
-	for c := range s.clients {
-		c.SetWriteDeadline(time.Now().Add(3 * time.Second))
-		if err := c.WriteMessage(websocket.TextMessage, data); err != nil {
-			_ = c.Close()
-			delete(s.clients, c)
+	s.mu.Lock()
+	type target struct {
+		conn *websocket.Conn
+		mu   *sync.Mutex
+	}
+	targets := make([]target, 0, len(s.clients))
+	for c, mu := range s.clients {
+		targets = append(targets, target{conn: c, mu: mu})
+	}
+	s.mu.Unlock()
+
+	for _, t := range targets {
+		t.mu.Lock()
+		t.conn.SetWriteDeadline(time.Now().Add(3 * time.Second))
+		writeErr := t.conn.WriteMessage(websocket.TextMessage, data)
+		t.mu.Unlock()
+
+		if writeErr != nil {
+			_ = t.conn.Close()
+			s.mu.Lock()
+			delete(s.clients, t.conn)
+			s.mu.Unlock()
 		}
 	}
 }
@@ -165,13 +190,13 @@ func (s *StreamServer) handleLiquidity(w http.ResponseWriter, r *http.Request) {
 func (s *StreamServer) handleHeatmap(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{
 		"active":    s.heatmap.GetActiveSnapshot(),
-		"history":   s.heatmap.GetHistory(60),
+		"history":   s.heatmap.GetHistory(15000),
 		"timestamp": time.Now().UTC(),
 	})
 }
 
 func (s *StreamServer) handleCandles(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, s.volatility.GetRecentCandles(150))
+	writeJSON(w, s.volatility.GetRecentCandles(500))
 }
 
 func (s *StreamServer) handleEvents(w http.ResponseWriter, r *http.Request) {

@@ -218,11 +218,11 @@ func (ve *VolatilityEngine) finalize1mCandle(nextStart time.Time) {
 	ve.lastClose = c.Close
 
 	// Cap memory slices
-	if len(ve.candles1m) > 300 {
-		ve.candles1m = ve.candles1m[len(ve.candles1m)-300:]
+	if len(ve.candles1m) > 1000 {
+		ve.candles1m = ve.candles1m[len(ve.candles1m)-1000:]
 	}
-	if len(ve.returns1m) > 300 {
-		ve.returns1m = ve.returns1m[len(ve.returns1m)-300:]
+	if len(ve.returns1m) > 1000 {
+		ve.returns1m = ve.returns1m[len(ve.returns1m)-1000:]
 	}
 }
 

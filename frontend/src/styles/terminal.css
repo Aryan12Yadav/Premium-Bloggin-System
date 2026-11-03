@@ -13,13 +13,13 @@
 html, body, #root {
   height: 100%;
   width: 100%;
+  overflow: hidden;
+  background-color: #06090F;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #06090F;
   color: #E2E8F0;
-  overflow: hidden;
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }
@@ -35,39 +35,128 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #090D14;
+  background: #070B12;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E2738;
+  background: #1B2436;
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #2D3B55;
 }
 
 /* Institutional Terminal Cards */
 .terminal-card {
-  background: #0B0F17;
-  border: 1px solid #161F2E;
+  background: #0A0E17;
+  border: 1px solid #141C2E;
   border-radius: 6px;
   overflow: hidden;
-  transition: border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .terminal-card:hover {
-  border-color: #1F2B3E;
+  border-color: #1E2B44;
 }
 
 .terminal-header {
-  background: #0E1420;
-  border-bottom: 1px solid #161F2E;
+  background: #0D1320;
+  border-bottom: 1px solid #141C2E;
   padding: 6px 10px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: #94A3B8;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* Terminal Buttons & Controls */
+.btn-terminal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: #0E1524;
+  color: #CBD5E1;
+  border: 1px solid #1B263C;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-terminal:hover {
+  background-color: #172238;
+  color: #FFFFFF;
+  border-color: #2D3E60;
+}
+.btn-terminal:active {
+  transform: translateY(1px);
+}
+.btn-terminal.active {
+  background-color: #F59E0B;
+  color: #06090F;
+  border-color: #F59E0B;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+}
+
+.btn-terminal-primary {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  color: #05070B;
+  border: 1px solid #F59E0B;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+.btn-terminal-primary:hover {
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
+  color: #000000;
+}
+
+.btn-terminal-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.btn-terminal-danger:hover {
+  background-color: rgba(239, 68, 68, 0.25);
+  border-color: #EF4444;
+  color: #FFFFFF;
+}
+
+.btn-terminal-success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.btn-terminal-success:hover {
+  background-color: rgba(16, 185, 129, 0.25);
+  border-color: #10B981;
+  color: #FFFFFF;
+}
+
+/* Terminal Input */
+.terminal-input {
+  background-color: #070B12;
+  border: 1px solid #182236;
+  border-radius: 4px;
+  color: #F8FAFC;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.terminal-input:focus {
+  outline: none;
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
 }
 
 /* Glow and Status Accents */
@@ -78,12 +167,28 @@ body {
   text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 .glow-amber {
-  text-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+/* Live Price Flash Animations */
+@keyframes flash-up {
+  0% { background-color: rgba(16, 185, 129, 0.35); color: #34D399; }
+  100% { background-color: transparent; }
+}
+@keyframes flash-down {
+  0% { background-color: rgba(239, 68, 68, 0.35); color: #F87171; }
+  100% { background-color: transparent; }
+}
+.price-flash-up {
+  animation: flash-up 0.8s ease-out;
+}
+.price-flash-down {
+  animation: flash-down 0.8s ease-out;
 }
 
 @keyframes pulse-fast {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.92); }
+  50% { opacity: 0.3; transform: scale(0.9); }
 }
 .animate-pulse-fast {
   animation: pulse-fast 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
