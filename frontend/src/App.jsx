@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import LiquidityHeatmapChart from './features/terminal/LiquidityHeatmapChart';
+import AIResearchPage from './features/research/AIResearchPage';
 import { LiveCandleStream } from './services/liveCandleStream';
 
 export default function App() {
+  // Navigation between 'terminal' (Live Heatmap) and 'research' (AI Research Session Page)
+  const initialView = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('view') === 'research' ? 'research' : 'terminal';
+  const [activeView, setActiveView] = useState(initialView);
+
   // Candlesticks are managed solely from the real-time API stream (Binance 0ms)
   const [candles, setCandles] = useState([]);
   const [livePrice, setLivePrice] = useState(null);
@@ -210,144 +215,174 @@ export default function App() {
   const isEngineLive = marketData.status === 'LIVE';
 
   return (
-    <div className="h-screen w-screen bg-[#06090F] flex flex-col overflow-hidden select-none text-[#E2E8F0]">
+    <div className="h-screen w-screen bg-[#0F1218] flex flex-col overflow-hidden select-none text-[#E5E7EB]">
       {/* ========================================================= */}
-      {/* 1. PROPER HEADER                                          */}
+      {/* 1. CLEAN HEADER (No symbols, no neon)                     */}
       {/* ========================================================= */}
-      <header className="bg-[#0A0E17] border-b border-[#141C2E] px-4 py-2 flex justify-between items-center z-20 flex-shrink-0">
-        {/* Left: Product & Real-time Live Price */}
-        <div className="flex items-center space-x-3">
+      <header className="bg-[#151A22] border-b border-[#232B3B] px-4 py-2.5 flex justify-between items-center z-20 flex-shrink-0 flex-wrap gap-2">
+        {/* Left: Product & Navigation Tabs */}
+        <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="font-bold text-base tracking-wide text-white">BTCUSDT</span>
-            <span className="bg-[#101726] text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-mono border border-amber-500/30">
-              PERPETUAL
+            <span className="font-bold text-sm tracking-wide text-white">BTCUSDT</span>
+            <span className="bg-[#202736] text-gray-300 px-2 py-0.5 rounded text-[11px] border border-gray-700">
+              Perpetual
             </span>
           </div>
 
-          <div className={`flex items-baseline space-x-1 font-mono px-2 py-0.5 rounded transition-all duration-300 ${priceFlash || ''}`}>
-            <span className="text-white font-bold text-lg glow-amber">
+          <div className="flex items-baseline space-x-1 px-1">
+            <span className="text-white font-semibold text-base">
               ${currentPrice.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
             </span>
+          </div>
+
+          {/* Simple Navigation Tabs (No emojis, simple font) */}
+          <div className="flex items-center space-x-1 bg-[#10141D] p-1 rounded border border-[#232B3B]">
+            <button
+              onClick={() => setActiveView('terminal')}
+              className={`px-3 py-1 rounded text-xs font-medium transition ${
+                activeView === 'terminal'
+                  ? 'bg-[#2563EB] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#1E2533]'
+              }`}
+            >
+              Terminal
+            </button>
+
+            <button
+              onClick={() => setActiveView('research')}
+              className={`px-3 py-1 rounded text-xs font-medium transition ${
+                activeView === 'research'
+                  ? 'bg-[#2563EB] text-white'
+                  : 'text-gray-400 hover:text-white hover:bg-[#1E2533]'
+              }`}
+            >
+              Research Blog
+            </button>
           </div>
         </div>
 
         {/* Center: Essential Market Telemetry Strip */}
-        <div className="hidden md:flex items-center space-x-4 text-xs font-mono bg-[#070B12] px-3.5 py-1.5 rounded border border-[#141C2E]">
+        <div className="hidden xl:flex items-center space-x-4 text-xs bg-[#10141D] px-3.5 py-1.5 rounded border border-[#232B3B] text-gray-400">
           <div className="flex items-center space-x-1.5">
-            <span className="text-gray-400">Spread:</span>
-            <span className="text-white font-bold">${spread.toFixed(1)}</span>
-            <span className="text-gray-500 text-[10px]">({spreadBps.toFixed(2)} bps)</span>
+            <span>Spread:</span>
+            <span className="text-gray-200 font-medium">${spread.toFixed(1)}</span>
+            <span className="text-gray-500 text-[11px]">({spreadBps.toFixed(2)} bps)</span>
           </div>
 
-          <span className="text-gray-700">•</span>
+          <span className="text-gray-600">•</span>
 
           <div className="flex items-center space-x-1.5">
-            <span className="text-gray-400">Imbalance:</span>
-            <span className={`font-bold ${imbalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span>Imbalance:</span>
+            <span className={`font-medium ${imbalance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {imbalance >= 0 ? `+${(imbalance * 100).toFixed(1)}%` : `${(imbalance * 100).toFixed(1)}%`}
             </span>
           </div>
 
-          <span className="text-gray-700 hidden lg:inline">•</span>
+          <span className="text-gray-600 hidden lg:inline">•</span>
 
           <div className="hidden lg:flex items-center space-x-1.5">
-            <span className="text-gray-400">1m Vol:</span>
-            <span className="text-amber-400 font-bold">
+            <span>1m Vol:</span>
+            <span className="text-gray-200 font-medium">
               {((marketData.volatility?.realized_volatility || 0.0142) * 100).toFixed(2)}%
             </span>
           </div>
 
-          <span className="text-gray-700 hidden xl:inline">•</span>
+          <span className="text-gray-600 hidden xl:inline">•</span>
 
           <div className="hidden xl:flex items-center space-x-1.5">
-            <span className="text-gray-400">ATR:</span>
-            <span className="text-cyan-400 font-bold">
+            <span>ATR:</span>
+            <span className="text-gray-200 font-medium">
               ${(marketData.volatility?.atr || 68.5).toFixed(1)}
             </span>
           </div>
         </div>
 
         {/* Right: Engine Status Badge & UTC Clock */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5 bg-[#070B12] px-2.5 py-1 rounded border border-[#141C2E] text-xs font-mono">
+        <div className="flex items-center space-x-3 text-xs">
+          <div className="flex items-center space-x-1.5 bg-[#10141D] px-2.5 py-1 rounded border border-[#232B3B]">
             <span
               className={`w-2 h-2 rounded-full ${
-                isEngineLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                isEngineLive ? 'bg-green-500' : 'bg-gray-500'
               }`}
             ></span>
-            <span className={isEngineLive ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
-              GO ENGINE: {marketData.status}
+            <span className="text-gray-300">
+              Engine: {isEngineLive ? 'Connected' : 'Standby'}
             </span>
           </div>
 
-          <span className="text-gray-400 font-mono text-xs hidden sm:inline bg-[#070B12] px-2.5 py-1 rounded border border-[#141C2E]">
+          <span className="text-gray-400 bg-[#10141D] px-2.5 py-1 rounded border border-[#232B3B] hidden sm:inline">
             {currentTime.slice(17, 25)} UTC
           </span>
         </div>
       </header>
 
       {/* ========================================================= */}
-      {/* 2. PROPER MAIN (Unified Chart & Heatmap Terminal)        */}
+      {/* 2. DYNAMIC MAIN VIEW (Heatmap Terminal vs AI Research)     */}
       {/* ========================================================= */}
-      <main className="flex-1 p-2 flex flex-col overflow-hidden min-h-0 bg-[#06090F]">
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0 rounded border border-[#141C2E] bg-[#0A0E17]">
-          <LiquidityHeatmapChart
-            candles={candles}
-            activeHeatmap={marketData.heatmap}
-            heatmapHistory={marketData.heatmapHistory}
-            liquiditySnapshot={marketData.liquidity}
-            currentPrice={currentPrice}
-            timeframe={timeframe}
-            onTimeframeChange={setTimeframe}
-            symbol="BTCUSDT PERP"
-          />
-        </div>
-      </main>
+      {activeView === 'terminal' ? (
+        <main className="flex-1 p-2 flex flex-col overflow-hidden min-h-0 bg-[#0F1218]">
+          <div className="flex-1 flex flex-col overflow-hidden min-h-0 rounded border border-[#232B3B] bg-[#151A22]">
+            <LiquidityHeatmapChart
+              candles={candles}
+              activeHeatmap={marketData.heatmap}
+              heatmapHistory={marketData.heatmapHistory}
+              liquiditySnapshot={marketData.liquidity}
+              currentPrice={currentPrice}
+              timeframe={timeframe}
+              onTimeframeChange={setTimeframe}
+              symbol="BTCUSDT PERP"
+            />
+          </div>
+        </main>
+      ) : (
+        <AIResearchPage
+          marketData={marketData}
+          currentPrice={currentPrice}
+          onNavigateToTerminal={() => setActiveView('terminal')}
+        />
+      )}
 
       {/* ========================================================= */}
-      {/* 3. PROPER FOOTER                                          */}
+      {/* 3. CLEAN FOOTER                                           */}
       {/* ========================================================= */}
-      <footer className="bg-[#0A0E17] border-t border-[#141C2E] px-4 py-1.5 flex justify-between items-center text-xs font-mono text-gray-400 z-20 flex-shrink-0">
+      <footer className="bg-[#151A22] border-t border-[#232B3B] px-4 py-2 flex justify-between items-center text-xs text-gray-400 z-20 flex-shrink-0">
         {/* Left: Orderbook Summary */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1">
             <span className="text-gray-500">Best Bid:</span>
-            <span className="text-emerald-400 font-bold">
+            <span className="text-green-400 font-medium">
               ${(marketData.orderbook?.best_bid || currentPrice - 0.5).toFixed(1)}
             </span>
           </div>
-          <span className="text-gray-700">|</span>
+          <span className="text-gray-600">|</span>
           <div className="flex items-center space-x-1">
             <span className="text-gray-500">Best Ask:</span>
-            <span className="text-red-400 font-bold">
+            <span className="text-red-400 font-medium">
               ${(marketData.orderbook?.best_ask || currentPrice + 0.5).toFixed(1)}
             </span>
           </div>
-          <span className="text-gray-700 hidden sm:inline">|</span>
+          <span className="text-gray-600 hidden sm:inline">|</span>
           <div className="hidden sm:flex items-center space-x-1">
             <span className="text-gray-500">Spread:</span>
-            <span className="text-white font-semibold">${spread.toFixed(1)}</span>
+            <span className="text-gray-200 font-medium">${spread.toFixed(1)}</span>
           </div>
         </div>
 
         {/* Center: Live Data Source Telemetry */}
-        <div className="hidden md:flex items-center space-x-2 text-[11px] text-gray-500">
-          <span className="text-emerald-400 font-medium">● Candle Feed: Public API (0ms latency)</span>
+        <div className="hidden md:flex items-center space-x-2 text-xs text-gray-400">
+          <span>Candle Feed: Live</span>
           <span>•</span>
-          <span className={isEngineLive ? 'text-blue-400' : 'text-gray-400'}>
-            Heatmap Engine: Port 8080
-          </span>
+          <span>Go Engine: Port 8080</span>
         </div>
 
         {/* Right: Sync Status & Candle Count */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 text-xs">
           <div className="flex items-center space-x-1">
             <span className="text-gray-500">Candles:</span>
-            <span className="text-emerald-400 font-bold">{candles.length} Synced</span>
+            <span className="text-gray-200 font-medium">{candles.length} Synced</span>
           </div>
-          <span className="text-gray-700">•</span>
-          <span className="text-gray-500">Status: <strong className="text-emerald-400">Optimal</strong></span>
+          <span className="text-gray-600">•</span>
+          <span className="text-gray-400">Status: <strong className="text-gray-200 font-medium">Optimal</strong></span>
         </div>
       </footer>
     </div>

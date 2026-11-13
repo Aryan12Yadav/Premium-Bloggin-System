@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,182 +12,132 @@ html, body, #root {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background-color: #06090F;
+  background-color: #0F1218;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #E2E8F0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #E5E7EB;
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }
 
-.font-mono {
-  font-family: 'JetBrains Mono', monospace;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Custom Sleek Scrollbars */
+/* Custom Clean Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #070B12;
+  background: #0F1218;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1B2436;
-  border-radius: 2px;
+  background: #28303F;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2D3B55;
+  background: #3B465C;
 }
 
-/* Institutional Terminal Cards */
+/* Clean Cards */
 .terminal-card {
-  background: #0A0E17;
-  border: 1px solid #141C2E;
+  background: #151A22;
+  border: 1px solid #232B3B;
   border-radius: 6px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-.terminal-card:hover {
-  border-color: #1E2B44;
 }
 
 .terminal-header {
-  background: #0D1320;
-  border-bottom: 1px solid #141C2E;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: #94A3B8;
+  background: #1A202C;
+  border-bottom: 1px solid #232B3B;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9CA3AF;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
 }
 
-/* Terminal Buttons & Controls */
+/* Simple, Standard Buttons */
 .btn-terminal {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  background-color: #0E1524;
-  color: #CBD5E1;
-  border: 1px solid #1B263C;
+  background-color: #1A202C;
+  color: #D1D5DB;
+  border: 1px solid #2D3748;
   border-radius: 4px;
-  padding: 3px 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 .btn-terminal:hover {
-  background-color: #172238;
+  background-color: #2D3748;
   color: #FFFFFF;
-  border-color: #2D3E60;
+  border-color: #4A5568;
 }
 .btn-terminal:active {
-  transform: translateY(1px);
+  background-color: #1A202C;
 }
 .btn-terminal.active {
-  background-color: #F59E0B;
-  color: #06090F;
-  border-color: #F59E0B;
-  font-weight: 700;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+  background-color: #2563EB;
+  color: #FFFFFF;
+  border-color: #2563EB;
 }
 
 .btn-terminal-primary {
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  color: #05070B;
-  border: 1px solid #F59E0B;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+  background-color: #2563EB;
+  color: #FFFFFF;
+  border: 1px solid #2563EB;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 .btn-terminal-primary:hover {
-  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
-  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
-  color: #000000;
+  background-color: #1D4ED8;
+  border-color: #1D4ED8;
 }
 
 .btn-terminal-danger {
-  background-color: rgba(239, 68, 68, 0.15);
+  background-color: #2B1D20;
   color: #F87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid #4C262C;
 }
 .btn-terminal-danger:hover {
-  background-color: rgba(239, 68, 68, 0.25);
+  background-color: #382428;
   border-color: #EF4444;
   color: #FFFFFF;
 }
 
 .btn-terminal-success {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: #34D399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background-color: #182822;
+  color: #4ADE80;
+  border: 1px solid #224D39;
 }
 .btn-terminal-success:hover {
-  background-color: rgba(16, 185, 129, 0.25);
-  border-color: #10B981;
+  background-color: #20362E;
+  border-color: #22C55E;
   color: #FFFFFF;
 }
 
-/* Terminal Input */
+/* Simple Inputs */
 .terminal-input {
-  background-color: #070B12;
-  border: 1px solid #182236;
+  background-color: #151A22;
+  border: 1px solid #2D3748;
   border-radius: 4px;
-  color: #F8FAFC;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  padding: 4px 8px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  color: #F3F4F6;
+  font-size: 12px;
+  padding: 5px 8px;
 }
 .terminal-input:focus {
   outline: none;
-  border-color: #F59E0B;
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.3);
-}
-
-/* Glow and Status Accents */
-.glow-bid {
-  text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
-}
-.glow-ask {
-  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-}
-.glow-amber {
-  text-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
-}
-
-/* Live Price Flash Animations */
-@keyframes flash-up {
-  0% { background-color: rgba(16, 185, 129, 0.35); color: #34D399; }
-  100% { background-color: transparent; }
-}
-@keyframes flash-down {
-  0% { background-color: rgba(239, 68, 68, 0.35); color: #F87171; }
-  100% { background-color: transparent; }
-}
-.price-flash-up {
-  animation: flash-up 0.8s ease-out;
-}
-.price-flash-down {
-  animation: flash-down 0.8s ease-out;
-}
-
-@keyframes pulse-fast {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(0.9); }
-}
-.animate-pulse-fast {
-  animation: pulse-fast 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-color: #2563EB;
 }

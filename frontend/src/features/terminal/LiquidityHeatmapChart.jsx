@@ -893,24 +893,23 @@ export default function LiquidityHeatmapChart({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full bg-[#06090F] rounded overflow-hidden select-none border border-[#141C2E] flex flex-col flex-1"
+      className="relative w-full h-full bg-[#0F1218] rounded overflow-hidden select-none border border-[#232B3B] flex flex-col flex-1"
     >
-      {/* Top Professional Control Ribbon */}
-      <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between bg-[#0A0E17]/95 backdrop-blur px-3 py-1.5 rounded border border-[#1E293E] text-xs font-mono shadow-md">
+      {/* Top Control Ribbon (Clean, no symbols, neutral dark) */}
+      <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between bg-[#151A22] px-3 py-1.5 rounded border border-[#232B3B] text-xs shadow-sm">
         {/* Left: Product & Timeframe */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="text-white font-bold text-xs">{symbol}</span>
+            <span className="text-white font-semibold text-xs">{symbol}</span>
           </div>
 
-          <div className="flex items-center space-x-1 border-l border-gray-800 pl-3">
-            <span className="text-gray-500 text-[10px] mr-1">Timeframe:</span>
+          <div className="flex items-center space-x-1 border-l border-[#2E374A] pl-3">
+            <span className="text-gray-400 text-xs mr-1">Timeframe:</span>
             {['1m', '5m', '15m'].map(tf => (
               <button
                 key={tf}
                 onClick={() => onTimeframeChange && onTimeframeChange(tf)}
-                className={`btn-terminal text-[11px] px-2 py-0.5 font-bold ${
+                className={`btn-terminal text-xs px-2 py-0.5 font-medium ${
                   timeframe === tf ? 'active' : ''
                 }`}
               >
@@ -921,95 +920,95 @@ export default function LiquidityHeatmapChart({
         </div>
 
         {/* Center: Liquidity Density Legend & Live S/R Levels */}
-        <div className="hidden lg:flex items-center space-x-3 text-[10px] text-gray-400 bg-[#070B12] px-3 py-1 rounded border border-[#141C2E]">
+        <div className="hidden lg:flex items-center space-x-3 text-xs text-gray-400 bg-[#10141D] px-3 py-1 rounded border border-[#232B3B]">
           <div className="flex items-center space-x-1.5">
-            <span className="text-gray-500 font-semibold">Density:</span>
+            <span className="text-gray-400">Density:</span>
             <span className="text-gray-400">Low</span>
             <div className="flex items-center space-x-0.5">
-              <span className="w-3.5 h-2.5 rounded-sm bg-[#06B6D4]" title="Moderate Liquidity"></span>
-              <span className="w-3.5 h-2.5 rounded-sm bg-[#22C55E]" title="High Liquidity"></span>
-              <span className="w-3.5 h-2.5 rounded-sm bg-[#FACC15]" title="Dense Liquidity"></span>
-              <span className="w-3.5 h-2.5 rounded-sm bg-[#F97316]" title="Dense Wall"></span>
+              <span className="w-3 h-2 rounded-sm bg-blue-500" title="Low Liquidity"></span>
+              <span className="w-3 h-2 rounded-sm bg-emerald-500" title="Moderate Liquidity"></span>
+              <span className="w-3 h-2 rounded-sm bg-amber-400" title="High Liquidity"></span>
+              <span className="w-3 h-2 rounded-sm bg-orange-500" title="Dense Wall"></span>
             </div>
-            <span className="text-amber-400 font-semibold">Dense</span>
+            <span className="text-gray-300 font-medium">Dense</span>
           </div>
 
           {majorSupport && (
             <>
-              <span className="text-gray-700">•</span>
-              <span className="text-emerald-400 font-semibold">
-                Sup (Demand): ${majorSupport.price.toLocaleString()}
+              <span className="text-gray-600">•</span>
+              <span className="text-green-400">
+                Support: ${majorSupport.price.toLocaleString()}
               </span>
             </>
           )}
 
           {majorResistance && (
             <>
-              <span className="text-gray-700">•</span>
-              <span className="text-red-400 font-semibold">
-                Res (Supply): ${majorResistance.price.toLocaleString()}
+              <span className="text-gray-600">•</span>
+              <span className="text-red-400">
+                Resistance: ${majorResistance.price.toLocaleString()}
               </span>
             </>
           )}
         </div>
 
-        {/* Right: Controls & Toggles */}
+        {/* Right: Controls & Toggles (No symbols, clean text) */}
         <div className="flex items-center space-x-2">
           {/* Heatmap Toggle */}
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`btn-terminal text-[10px] px-2 py-0.5 ${
-              showHeatmap ? 'btn-terminal-primary font-bold' : 'opacity-60'
+            className={`btn-terminal text-xs px-2.5 py-0.5 ${
+              showHeatmap ? 'btn-terminal-primary' : 'opacity-70'
             }`}
             title="Toggle Liquidity Heatmap"
           >
-            🔥 Heatmap {showHeatmap ? 'ON' : 'OFF'}
+            Heatmap: {showHeatmap ? 'On' : 'Off'}
           </button>
 
           {/* S/R Institutional Levels Toggle */}
           <button
             onClick={() => setShowSRZones(!showSRZones)}
-            className={`btn-terminal text-[10px] px-2 py-0.5 ${
-              showSRZones ? 'btn-terminal-warning font-bold' : 'opacity-60'
+            className={`btn-terminal text-xs px-2.5 py-0.5 ${
+              showSRZones ? 'btn-terminal-primary' : 'opacity-70'
             }`}
-            title="Toggle Demand / Supply Institutional Zones"
+            title="Toggle Support / Resistance Levels"
           >
-            🎯 S/R Zones {showSRZones ? 'ON' : 'OFF'}
+            S/R Zones: {showSRZones ? 'On' : 'Off'}
           </button>
 
           {/* Depth Profile Toggle */}
           <button
             onClick={() => setShowProfile(!showProfile)}
-            className={`btn-terminal text-[10px] px-2 py-0.5 ${
-              showProfile ? 'btn-terminal-success font-bold' : 'opacity-60'
+            className={`btn-terminal text-xs px-2.5 py-0.5 ${
+              showProfile ? 'btn-terminal-primary' : 'opacity-70'
             }`}
             title="Toggle Orderbook Depth Profile"
           >
-            📊 Depth {showProfile ? 'ON' : 'OFF'}
+            Depth: {showProfile ? 'On' : 'Off'}
           </button>
 
           {/* Zoom Buttons */}
-          <div className="flex items-center space-x-1 border-l border-gray-800 pl-2">
+          <div className="flex items-center space-x-1 border-l border-[#2E374A] pl-2">
             <button
               onClick={() => handleZoom(1.2)}
-              className="btn-terminal text-[11px] px-2 py-0.5"
+              className="btn-terminal text-xs px-2 py-0.5"
               title="Zoom In"
             >
               +
             </button>
             <button
               onClick={() => handleZoom(0.83)}
-              className="btn-terminal text-[11px] px-2 py-0.5"
+              className="btn-terminal text-xs px-2 py-0.5"
               title="Zoom Out"
             >
               -
             </button>
             <button
               onClick={resetView}
-              className="btn-terminal text-[10px] px-2 py-0.5 text-amber-400 hover:text-amber-300"
-              title="Auto-Fit Price View"
+              className="btn-terminal text-xs px-2 py-0.5"
+              title="Reset View"
             >
-              Fit
+              Reset
             </button>
           </div>
         </div>
