@@ -158,7 +158,6 @@ export default function AnalyticsPanel({ liquidity, volatility, events = [], onP
                     <div
                       key={evt.event_id || idx}
                       onClick={() => evt.price_level && onPriceSelect && onPriceSelect(evt.price_level)}
-                      title="Click to copy trigger price to Risk Calculator"
                       className="bg-[#070B12] p-1.5 rounded border border-[#141C2E] hover:border-amber-500/40 cursor-pointer transition flex flex-col space-y-0.5"
                     >
                       <div className="flex justify-between items-center text-[9px]">

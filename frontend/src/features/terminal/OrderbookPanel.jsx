@@ -81,7 +81,6 @@ export default function OrderbookPanel({ orderbook, onPriceSelect }) {
                 <div
                   key={i}
                   onClick={() => onPriceSelect && onPriceSelect(b.price)}
-                  title={`Click to set Entry/Stop in Risk Calc: $${b.price.toFixed(1)} (Total: $${Math.round(b.cumNotional).toLocaleString()})`}
                   className="relative flex justify-between items-center py-0.5 px-1 rounded overflow-hidden hover:bg-emerald-500/15 cursor-pointer transition group"
                 >
                   <div
@@ -109,7 +108,6 @@ export default function OrderbookPanel({ orderbook, onPriceSelect }) {
                 <div
                   key={i}
                   onClick={() => onPriceSelect && onPriceSelect(a.price)}
-                  title={`Click to set Entry/Stop in Risk Calc: $${a.price.toFixed(1)} (Total: $${Math.round(a.cumNotional).toLocaleString()})`}
                   className="relative flex justify-between items-center py-0.5 px-1 rounded overflow-hidden hover:bg-red-500/15 cursor-pointer transition group"
                 >
                   <div
